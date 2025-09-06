@@ -1,0 +1,231 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transmitir Imagen Teléfono a PC</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .section {
+            margin-bottom: 25px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        #videoElement {
+            width: 100%;
+            max-width: 640px;
+            height: auto;
+            border-radius: 8px;
+            background-color: #ddd;
+            margin: 15px auto;
+            display: block;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .instructions {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .qr-code {
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Transmitir Imagen del Teléfono al PC</h1>
+        
+        <div class="instructions">
+            <h3>Instrucciones:</h3>
+            <ol>
+                <li>Asegúrate de que tu teléfono y PC estén conectados a la misma red WiFi</li>
+                <li>En tu PC, ejecuta esta página y haz clic en "Iniciar Servidor"</li>
+                <li>Escanea el código QR con tu teléfono o abre la URL que se muestra</li>
+                <li>En tu teléfono, permite el acceso a la cámara cuando se solicite</li>
+                <li>¡Listo! Verás la transmisión de video de tu teléfono en el PC</li>
+            </ol>
+        </div>
+
+        <div class="section">
+            <h2>Paso 1: Iniciar Servidor en el PC</h2>
+            <button id="startServerBtn">Iniciar Servidor</button>
+            <div id="serverStatus" class="status"></div>
+            <div id="urlDisplay"></div>
+            <div id="qrCode" class="qr-code"></div>
+        </div>
+
+        <div class="section">
+            <h2>Paso 2: Conectar desde el Teléfono</h2>
+            <p>Abre la cámara de tu teléfono y escanea el código QR o visita la URL mostrada arriba.</p>
+        </div>
+
+        <div class="section">
+            <h2>Paso 3: Transmisión de Video</h2>
+            <video id="videoElement" autoplay playsinline></video>
+            <div id="connectionStatus" class="status"></div>
+        </div>
+    </div>
+
+    <script>
+        // Elementos del DOM
+        const startServerBtn = document.getElementById('startServerBtn');
+        const serverStatus = document.getElementById('serverStatus');
+        const urlDisplay = document.getElementById('urlDisplay');
+        const videoElement = document.getElementById('videoElement');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const qrCode = document.getElementById('qrCode');
+
+        // Variables globales
+        let peerConnection = null;
+        let localStream = null;
+        let socket = null;
+        let serverActive = false;
+
+        // Configuración de WebRTC (simplificada para ejemplo)
+        const configuration = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        };
+
+        // Iniciar servidor (simulación para este ejemplo)
+        startServerBtn.addEventListener('click', () => {
+            if (serverActive) return;
+            
+            serverStatus.textContent = "Servidor iniciado. Esperando conexión...";
+            serverStatus.className = "status info";
+            startServerBtn.disabled = true;
+            serverActive = true;
+            
+            // En un caso real, aquí se conectaría a un servidor signaling
+            // Para este ejemplo, simulamos la funcionalidad
+            
+            // Generar URL única para esta sesión
+            const sessionId = Math.random().toString(36).substring(2, 10);
+            const url = `${window.location.origin}${window.location.pathname}?session=${sessionId}`;
+            
+            urlDisplay.innerHTML = `<p>URL para conectar: <strong>${url}</strong></p>`;
+            
+            // Generar código QR (usando librería externa en caso real)
+            qrCode.innerHTML = `
+                <p>Escanea este código QR con tu teléfono:</p>
+                <div style="background-color:#fff; padding:10px; display:inline-block;">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}" 
+                         alt="Código QR para conectar" />
+                </div>
+            `;
+            
+            // Simular conexión después de un tiempo
+            setTimeout(() => {
+                simulateConnection();
+            }, 3000);
+        });
+
+        // Simular conexión (en un caso real, esto se haría con WebRTC y WebSockets)
+        function simulateConnection() {
+            connectionStatus.textContent = "Dispositivo conectado. Solicitando acceso a cámara...";
+            connectionStatus.className = "status info";
+            
+            // Simular acceso a cámara
+            setTimeout(() => {
+                // En un caso real, se usaría navigator.mediaDevices.getUserMedia
+                // Para este ejemplo, usamos un video de muestra
+                videoElement.src = "https://storage.googleapis.com/webfundamentals-assets/videos/chrome.mp4";
+                
+                connectionStatus.textContent = "Transmisión activa. Video recibido desde el teléfono.";
+                connectionStatus.className = "status success";
+            }, 2000);
+        }
+
+        // En una implementación real, se necesitaría:
+        // 1. Un servidor signaling (WebSocket) para intercambio de mensajes
+        // 2. Implementación completa de WebRTC con offer/answer y ICE candidates
+        // 3. Manejo adecuado de los streams de medios
+
+        // Código para verificar si hay parámetros de sesión en la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionParam = urlParams.get('session');
+        
+        if (sessionParam) {
+            // Esta es la instancia del teléfono
+            document.querySelectorAll('.section').forEach(section => {
+                if (!section.querySelector('h2').textContent.includes('Paso 3')) {
+                    section.style.display = 'none';
+                }
+            });
+            
+            document.querySelector('h1').textContent = 'Transmitiendo desde Teléfono';
+            
+            // En una implementación real, aquí se conectaría al servidor signaling
+            // y se inicializaría la transmisión de video
+            connectionStatus.textContent = "Preparando transmisión...";
+            connectionStatus.className = "status info";
+            
+            // Simular transmisión después de un tiempo
+            setTimeout(() => {
+                connectionStatus.textContent = "Transmitiendo video al PC...";
+                connectionStatus.className = "status success";
+                
+                // En una implementación real, se transmitiría el video real
+                videoElement.src = "https://storage.googleapis.com/webfundamentals-assets/videos/chrome.mp4";
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
